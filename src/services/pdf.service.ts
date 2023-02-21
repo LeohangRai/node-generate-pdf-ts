@@ -6,7 +6,7 @@ import { Readable } from "stream";
 
 export async function generatePdf (
     data: CustomInvoicePayload, 
-    templatePath: string = 'src/templates/invoice.ejs',
+    templatePath: string = 'src/templates/invoice-np.ejs',
     type: 'buffer' | 'stream' = 'stream'
 ) : Promise<Buffer | Readable> 
 {

@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import expressLayouts from 'express-ejs-layouts';
 import path from 'path';
 import * as fs from 'fs';
 import { Readable } from 'stream';
@@ -7,24 +8,32 @@ import { commonPdfData } from './common/common-invoice-pdf-payload';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const invoiceTemplatePath = 'src/templates/invoice.ejs';
+// replace 'invoice-np' with 'invoice-en' for English Invoice
+const invoiceTemplatePath = 'src/templates/invoice-np.ejs'; 
+
+app.use(expressLayouts);
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, '../public')));
 
 app.get('/', (req: Request, res: Response) => {
-    res.sendFile(path.join(__dirname + '/public/index.html'));
+    res.render('layout', { innerPage: './index', title: 'Download PDF' });
 })
 
+// sends file as a stream to the client browser
 app.get('/download-pdf', async (req: Request, res: Response) => {
     const pdfStream = await generatePdf(commonPdfData, invoiceTemplatePath, 'stream') as Readable;
-    res.attachment('receipt.pdf');
+    res.attachment('sample.pdf');
     res.setHeader('Content-Type', 'application/pdf');
     pdfStream.pipe(res);
 })
 
+// writes file on the server machine
 app.get('/save-pdf-on-server', async (req: Request, res: Response) => {
     const pdfStream = await generatePdf(commonPdfData, invoiceTemplatePath, 'stream') as Readable;
-    const destinationFile = fs.createWriteStream('sample-receipt.pdf');
+    const destinationFile = fs.createWriteStream('sample.pdf');
     pdfStream.pipe(destinationFile);
-    return;
+    return res.send('File written successfully!');;
 })
 
 app.listen(PORT, () => {
